@@ -62,10 +62,11 @@ class GameViewModel(application: Application):AndroidViewModel(application) {
     val minPercent:LiveData<Int>
         get() = _minPercent
 
-     fun startGame(){
+     fun startGame(level: Level){
          GetGameSettings(level)
          startTimer()
          generateQuestion()
+         updateProgress()
     }
     fun chooseAnswer(number:Int){
         checkAnswer(number)
@@ -86,6 +87,9 @@ class GameViewModel(application: Application):AndroidViewModel(application) {
     }
 
     private fun calculatePercenrOfRightAnswers():Int{
+        if (countOfQuestion == 0){
+            return 0
+        }
             return ((countOfRightAnswers / countOfQuestion.toDouble()) * 100).toInt()
     }
 
