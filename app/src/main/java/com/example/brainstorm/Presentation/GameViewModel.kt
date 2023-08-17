@@ -21,13 +21,13 @@ class GameViewModel(application: Application):AndroidViewModel(application) {
     private lateinit var gameSettings: GameSettings
     private lateinit var level: Level
     private val repository = GameRepositoryImpl
-
+    private var timer: CountDownTimer? = null
     private val context = application
-
+    private var countOfRightAnswers = 0
+    private var countOfQuestion = 0
     private val generateQuestionsUseCase = GenerateQuestionsUseCase(repository)
     private val getGameSettingUseCase = GetGameSettingUseCase(repository)
 
-    private var timer: CountDownTimer? = null
 
     private val _formatetTime = MutableLiveData<String>()
     val formatetTime :LiveData<String>
@@ -61,9 +61,6 @@ class GameViewModel(application: Application):AndroidViewModel(application) {
     private val _minPercent = MutableLiveData<Int>()
     val minPercent:LiveData<Int>
         get() = _minPercent
-
-    private var countOfRightAnswers = 0
-    private var countOfQuestion = 0
 
      fun startGame(){
          GetGameSettings(level)
