@@ -2,27 +2,29 @@ package com.example.brainstorm.Presentation
 
 import android.content.res.ColorStateList
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.core.content.ContextCompat
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion
+import androidx.navigation.fragment.findNavController
+import androidx.navigation.fragment.navArgs
 import com.example.brainstorm.Domain.entity.GameResult
-import com.example.brainstorm.Domain.entity.Level
-import com.example.brainstorm.R
 import com.example.brainstorm.databinding.FragmentGameBinding
 
 class GameFragment : Fragment() {
-
-private val viewModel by lazy {
-    ViewModelProvider(this,
-        ViewModelProvider.
-        AndroidViewModelFactory.
-        getInstance(requireActivity().application))[GameViewModel::class.java]
-}
+    private val args by navArgs<GameFragmentArgs>()
+    private val viewModelFactory by lazy {
+        GameViewModelFactory(
+            args.level,
+            requireActivity().application
+        )
+    }
+    private val viewModel by lazy {
+    ViewModelProvider(this, viewModelFactory)[GameViewModel::class.java]
+    }
     private val tvOptions by lazy {
         mutableListOf<TextView>().apply {
             add(binding.tvOption1)
@@ -33,15 +35,11 @@ private val viewModel by lazy {
             add(binding.tvOption6)
         }
     }
-    private lateinit var level: Level
+
     private  var _binding: FragmentGameBinding? =null
     private val binding: FragmentGameBinding
         get() = _binding ?: throw RuntimeException("FragmentGameBinding == null")
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        parseArgs()
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -55,7 +53,6 @@ private val viewModel by lazy {
         super.onViewCreated(view, savedInstanceState)
         observeViewModel()
         setClickListenerToOptions()
-        viewModel.startGame(level)
     }
     private fun setClickListenerToOptions(){
         for (tvOptions in tvOptions){
@@ -105,35 +102,14 @@ private val viewModel by lazy {
         return ContextCompat.getColor(requireContext(), colorResId)
     }
 
-    private fun parseArgs (){
-         requireArguments().getParcelable<Level>(KEY_LEVEL)?.let {
-             level = it
-         }
-    }
+
     private fun launchGameFinishedFragment(gameResult: GameResult){
-        requireActivity().supportFragmentManager.beginTransaction()
-            .replace(R.id.main_container,GameFinishedFragment.newInstance(gameResult))
-            .addToBackStack(null)
-            .commit()
+        findNavController().navigate(
+            GameFragmentDirections.actionGameFragmentToGameFinishedFragment(gameResult))
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
-    }
-
-    companion object {
-
-        const val NAME = "GameFragment"
-        private const val KEY_LEVEL = "level"
-
-        @JvmStatic
-        fun newInstance(level: Level):GameFragment {
-           return GameFragment().apply {
-               arguments = Bundle().apply {
-                    putParcelable(KEY_LEVEL,level)
-               }
-           }
-        }
     }
 }

@@ -1,6 +1,7 @@
 package com.example.brainstorm.Presentation
 
 import android.app.Application
+import android.content.Context
 import android.os.CountDownTimer
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
@@ -15,18 +16,17 @@ import com.example.brainstorm.Domain.usecases.GenerateQuestionsUseCase
 import com.example.brainstorm.Domain.usecases.GetGameSettingUseCase
 import com.example.brainstorm.R
 
-class GameViewModel(application: Application):AndroidViewModel(application) {
+class GameViewModel( private val level: Level,  private val application: Application):ViewModel() {
 
 
     private lateinit var gameSettings: GameSettings
-    private lateinit var level: Level
     private val repository = GameRepositoryImpl
     private var timer: CountDownTimer? = null
-    private val context = application
     private var countOfRightAnswers = 0
     private var countOfQuestion = 0
     private val generateQuestionsUseCase = GenerateQuestionsUseCase(repository)
     private val getGameSettingUseCase = GetGameSettingUseCase(repository)
+
 
 
     private val _formatetTime = MutableLiveData<String>()
@@ -62,8 +62,8 @@ class GameViewModel(application: Application):AndroidViewModel(application) {
     val minPercent:LiveData<Int>
         get() = _minPercent
 
-     fun startGame(level: Level){
-         GetGameSettings(level)
+    private fun  startGame(){
+         GetGameSettings()
          startTimer()
          generateQuestion()
          updateProgress()
@@ -78,7 +78,7 @@ class GameViewModel(application: Application):AndroidViewModel(application) {
         val percent = calculatePercenrOfRightAnswers()
         _percentOfRightAnswer.value = percent
         _progressAnswers.value = String.format(
-            context.resources.getString(R.string.progress_answers),
+            application.resources.getString(R.string.progress_answers),
             countOfRightAnswers,
             gameSettings.minCountOfRightAnswers
         )
@@ -122,8 +122,7 @@ class GameViewModel(application: Application):AndroidViewModel(application) {
        _question.value = generateQuestionsUseCase(gameSettings.maxSumValue)
     }
 
-    private fun GetGameSettings(level: Level) {
-        this.level = level
+    private fun GetGameSettings() {
         this.gameSettings = getGameSettingUseCase(level)
         _minPercent.value = gameSettings.minPercentOfRightAnswers
     }
